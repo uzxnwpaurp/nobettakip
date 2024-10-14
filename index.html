@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hisse Senedi Takibi</title>
+    <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-database.js"></script>
+</head>
+<body>
+    <h1>Hisse Senedi Takibi</h1>
+    <div id="stocks"></div>
+    
+    <h2>Hisse Senedi Ekle</h2>
+    <select id="stock-select">
+        <option value="Acil">Acil</option>
+        <option value="Acil 24 Saat">Acil 24 Saat</option>
+        <option value="Pediatri">Pediatri</option>
+        <option value="Pediatri 24 Saat">Pediatri 24 Saat</option>
+        <option value="Genel Cerrahi">Genel Cerrahi</option>
+        <option value="Genel Cerrahi 24 Saat">Genel Cerrahi 24 Saat</option>
+        <option value="Dahiliye">Dahiliye</option>
+        <option value="Dahiliye 24 Saat">Dahiliye 24 Saat</option>
+        <option value="Kadın Doğum">Kadın Doğum</option>
+        <option value="Kadın Doğum 24 Saat">Kadın Doğum 24 Saat</option>
+        <option value="Seçmeli">Seçmeli</option>
+        <option value="Seçmeli 24 Saat">Seçmeli 24 Saat</option>
+    </select>
+    <input type="date" id="date" />
+    <input type="number" id="price" placeholder="Fiyat" />
+    <button onclick="addStock()">Ekle</button>
+
+    <h2>Veri Sıfırlama</h2>
+    <input type="password" id="reset-password" placeholder="Şifre" />
+    <button onclick="resetData()">Veri Sıfırla</button>
+
+    <script>
+        const firebaseConfig = {
+  apiKey: "AIzaSyC035yNDCY-LKV_NHXxdDaJBcPM_HY_zW4",
+  authDomain: "nobettakip-447bf.firebaseapp.com",
+  databaseURL: "https://nobettakip-447bf-default-rtdb.firebaseio.com",
+  projectId: "nobettakip-447bf",
+  storageBucket: "nobettakip-447bf.appspot.com",
+  messagingSenderId: "685407754980",
+  appId: "1:685407754980:web:5e63808d0c36186afbaaf1",
+  measurementId: "G-N36D0ST83P"
+        };
+
+        // Firebase'i başlat
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        const stocksRef = database.ref('stocks');
+
+        function addStock() {
+            const stock = document.getElementById('stock-select').value;
+            const date = document.getElementById('date').value;
+            const price = document.getElementById('price').value;
+
+            if (stock && date && price) {
+                stocksRef.push({ stock, date, price });
+                document.getElementById('date').value = '';
+                document.getElementById('price').value = '';
+            } else {
+                alert('Lütfen tüm alanları doldurun.');
+            }
+        }
+
+        function resetData() {
+            const password = document.getElementById('reset-password').value;
+            if (password === '785978') {
+                stocksRef.set({});
+            } else {
+                alert('Yanlış şifre!');
+            }
+        }
+
+        stocksRef.on('value', (snapshot) => {
+            const stocksDiv = document.getElementById('stocks');
+            stocksDiv.innerHTML = '';
+            snapshot.forEach(childSnapshot => {
+                const data = childSnapshot.val();
+                stocksDiv.innerHTML += `<p>${data.date} - ${data.stock}: ${data.price} TL</p>`;
+            });
+        });
+    </script>
+</body>
+</html>
