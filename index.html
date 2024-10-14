@@ -10,13 +10,16 @@
 </head>
 <body>
     <h1>Ata Uni İntörn Nöbet Fiyatı Takibi</h1>
+    
+    <h2>Son Satılan Nöbetler</h2>
     <div id="stocks"></div>
+    <button id="load-more" style="display:none;">Daha Eski</button>
 
     <h2>Averaj Fiyatlar</h2>
     <div id="average-prices">
         <p>24 Saatlik Nöbetlerin Ortalama Fiyat: <span id="average-24-saat">0</span> TL</p>
         <p>Diğer Nöbetlerin Ortalama Fiyatı: <span id="average-other">0</span> TL</p>
-        <div id="individual-averages"></div> <!-- Burası yeni eklenecek alan -->
+        <div id="individual-averages"></div>
     </div>
 
     <h2>Nöbet Satışı Ekle</h2>
@@ -57,6 +60,8 @@
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const stocksRef = database.ref('stocks');
+        let stocksArray = [];
+        let currentDisplayCount = 5;
 
         function addStock() {
             const stock = document.getElementById('stock-select').value;
@@ -74,7 +79,7 @@
 
         function resetData() {
             const password = document.getElementById('reset-password').value;
-            if (password === '785978') {
+            if (password === '79066540') {
                 stocksRef.set({});
             } else {
                 alert('Yanlış şifre!');
@@ -101,7 +106,6 @@
                     countOther++;
                 }
 
-                // Hesaplama için her hisseyi toplama ekle
                 if (!stockTotals[data.stock]) {
                     stockTotals[data.stock] = 0;
                     stockCounts[data.stock] = 0;
@@ -116,28 +120,42 @@
             document.getElementById('average-24-saat').innerText = average24Saat;
             document.getElementById('average-other').innerText = averageOther;
 
-            // Her hisse için ortalama fiyatları güncelle
             const individualAveragesDiv = document.getElementById('individual-averages');
-            individualAveragesDiv.innerHTML = ''; // Öncelikle mevcut içeriği temizle
+            individualAveragesDiv.innerHTML = '';
             for (const stock in stockTotals) {
                 const average = (stockCounts[stock] ? (stockTotals[stock] / stockCounts[stock]).toFixed(2) : 0);
                 individualAveragesDiv.innerHTML += `<p>${stock}: ${average} TL</p>`;
             }
         }
 
-        stocksRef.on('value', (snapshot) => {
+        function renderStocks() {
             const stocksDiv = document.getElementById('stocks');
             stocksDiv.innerHTML = '';
-            snapshot.forEach(childSnapshot => {
-                const data = childSnapshot.val();
+            const end = Math.min(currentDisplayCount, stocksArray.length);
+            for (let i = 0; i < end; i++) {
+                const data = stocksArray[i];
                 stocksDiv.innerHTML += `<p>${data.date} - ${data.stock}: ${data.price} TL</p>`;
-            });
+            }
+            document.getElementById('load-more').style.display = currentDisplayCount < stocksArray.length ? 'block' : 'none';
+        }
 
+        document.getElementById('load-more').onclick = () => {
+            currentDisplayCount += 5;
+            renderStocks();
+        };
+
+        stocksRef.on('value', (snapshot) => {
+            stocksArray = [];
+            snapshot.forEach(childSnapshot => {
+                stocksArray.push(childSnapshot.val());
+            });
+            renderStocks();
             updateAveragePrices(snapshot);
         });
     </script>
 </body>
 </html>
+
 
 
 
