@@ -28,7 +28,10 @@ p {
     color: #555;
 }
 
-select, input[type="date"], input[type="number"], input[type="password"] {
+select, 
+input[type="date"], 
+input[type="number"], 
+input[type="password"] {
     width: calc(100% - 20px);
     padding: 10px;
     margin: 5px 0;
@@ -68,6 +71,7 @@ button:hover {
 #individual-averages {
     margin-top: 10px;
 }
+
 
 
 
