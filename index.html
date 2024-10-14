@@ -11,7 +11,13 @@
 <body>
     <h1>Nöbet Fiyatı Takibi</h1>
     <div id="stocks"></div>
-    
+
+    <h2>Averaj Fiyatlar</h2>
+    <div id="average-prices">
+        <p>24 Saat Ortalama Fiyat: <span id="average-24-saat">0</span> TL</p>
+        <p>Diğer Hisselerin Ortalama Fiyatı: <span id="average-other">0</span> TL</p>
+    </div>
+
     <h2>Nöbet Satışı Ekle</h2>
     <select id="stock-select">
         <option value="Acil">Acil</option>
@@ -37,19 +43,18 @@
 
     <script>
         const firebaseConfig = {
-  apiKey: "AIzaSyC035yNDCY-LKV_NHXxdDaJBcPM_HY_zW4",
-  authDomain: "nobettakip-447bf.firebaseapp.com",
-  databaseURL: "https://nobettakip-447bf-default-rtdb.firebaseio.com",
-  projectId: "nobettakip-447bf",
-  storageBucket: "nobettakip-447bf.appspot.com",
-  messagingSenderId: "685407754980",
-  appId: "1:685407754980:web:5e63808d0c36186afbaaf1",
-  measurementId: "G-N36D0ST83P"
+            apiKey: "AIzaSyC035yNDCY-LKV_NHXxdDaJBcPM_HY_zW4",
+            authDomain: "nobettakip-447bf.firebaseapp.com",
+            databaseURL: "https://nobettakip-447bf-default-rtdb.firebaseio.com",
+            projectId: "nobettakip-447bf",
+            storageBucket: "nobettakip-447bf.appspot.com",
+            messagingSenderId: "685407754980",
+            appId: "1:685407754980:web:5e63808d0c36186afbaaf1",
+            measurementId: "G-N36D0ST83P"
         };
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
-
         const stocksRef = database.ref('stocks');
 
         function addStock() {
@@ -75,6 +80,31 @@
             }
         }
 
+        function updateAveragePrices(snapshot) {
+            let total24Saat = 0;
+            let count24Saat = 0;
+            let totalOther = 0;
+            let countOther = 0;
+
+            snapshot.forEach(childSnapshot => {
+                const data = childSnapshot.val();
+                const price = parseFloat(data.price);
+                if (data.stock.includes("24 Saat")) {
+                    total24Saat += price;
+                    count24Saat++;
+                } else {
+                    totalOther += price;
+                    countOther++;
+                }
+            });
+
+            const average24Saat = count24Saat ? (total24Saat / count24Saat).toFixed(2) : 0;
+            const averageOther = countOther ? (totalOther / countOther).toFixed(2) : 0;
+
+            document.getElementById('average-24-saat').innerText = average24Saat;
+            document.getElementById('average-other').innerText = averageOther;
+        }
+
         stocksRef.on('value', (snapshot) => {
             const stocksDiv = document.getElementById('stocks');
             stocksDiv.innerHTML = '';
@@ -82,8 +112,11 @@
                 const data = childSnapshot.val();
                 stocksDiv.innerHTML += `<p>${data.date} - ${data.stock}: ${data.price} TL</p>`;
             });
+
+            updateAveragePrices(snapshot);
         });
     </script>
 </body>
 </html>
+
 
