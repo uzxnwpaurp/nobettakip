@@ -3,8 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nöbet Fiyatı Takibi</title>
-    <link rel="stylesheet" href="styles.css"> <!-- CSS dosyasını buradan ekleyin -->
+    <title>Atauni İntörn Nöbet Fiyatı Takibi</title>
+    <link rel="stylesheet" href="styles.css">
     <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/7.20.0/firebase-database.js"></script>
 </head>
@@ -16,6 +16,7 @@
     <div id="average-prices">
         <p>24 Saatlik Nöbetlerin Ortalama Fiyat: <span id="average-24-saat">0</span> TL</p>
         <p>Diğer Nöbetlerin Ortalama Fiyatı: <span id="average-other">0</span> TL</p>
+        <div id="individual-averages"></div> <!-- Burası yeni eklenecek alan -->
     </div>
 
     <h2>Nöbet Satışı Ekle</h2>
@@ -86,6 +87,9 @@
             let totalOther = 0;
             let countOther = 0;
 
+            const stockTotals = {};
+            const stockCounts = {};
+
             snapshot.forEach(childSnapshot => {
                 const data = childSnapshot.val();
                 const price = parseFloat(data.price);
@@ -96,6 +100,14 @@
                     totalOther += price;
                     countOther++;
                 }
+
+                // Hesaplama için her hisseyi toplama ekle
+                if (!stockTotals[data.stock]) {
+                    stockTotals[data.stock] = 0;
+                    stockCounts[data.stock] = 0;
+                }
+                stockTotals[data.stock] += price;
+                stockCounts[data.stock]++;
             });
 
             const average24Saat = count24Saat ? (total24Saat / count24Saat).toFixed(2) : 0;
@@ -103,6 +115,14 @@
 
             document.getElementById('average-24-saat').innerText = average24Saat;
             document.getElementById('average-other').innerText = averageOther;
+
+            // Her hisse için ortalama fiyatları güncelle
+            const individualAveragesDiv = document.getElementById('individual-averages');
+            individualAveragesDiv.innerHTML = ''; // Öncelikle mevcut içeriği temizle
+            for (const stock in stockTotals) {
+                const average = (stockCounts[stock] ? (stockTotals[stock] / stockCounts[stock]).toFixed(2) : 0);
+                individualAveragesDiv.innerHTML += `<p>${stock}: ${average} TL</p>`;
+            }
         }
 
         stocksRef.on('value', (snapshot) => {
@@ -118,6 +138,7 @@
     </script>
 </body>
 </html>
+
 
 
 
